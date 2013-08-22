@@ -1,0 +1,108 @@
+---
+
+
+
+name: uaa
+
+database:
+  driverClassName: org.postgresql.Driver
+  url: jdbc://9.10.5.181:2544/uaa
+  username: uaadb
+  password: "uaadb"
+
+spring_profiles: postgresql
+
+logging:
+  config: /var/vcap/jobs/uaa/config/log4j.properties
+
+
+jwt:
+  token:
+    signing-key: "cctokensecret"
+    verification-key: "cctokensecret"
+
+
+issuer.uri: https://uaa.cf.rdg.cpgpaas.net
+
+oauth:
+  
+  authorize:
+    ssl: true
+  
+  client:
+  
+    autoapprove: 
+      - vmc
+      - my
+      - portal
+      - micro
+      - support-signon
+      - login
+  
+  clients:
+
+    dashboard:
+      secret: dashboardsecret
+      scope: openid,dashboard.user
+      authorities: uaa.admin,uaa.resource,tokens.read,scim.read,scim.write
+      authorized-grant-types: client_credentials,authorization_code,refresh_token
+    portal:
+      override: true
+      id: portal
+      scope: scim.write,scim.read,openid,cloud_controller.read,cloud_controller.write
+      authorities: scim.write,scim.read,openid,cloud_controller.read,cloud_controller.write,password.write,uaa.admin
+      secret: portalsecret
+      authorized-grant-types: authorization_code,client_credentials,password,implicit
+      access-token-validity: 1209600
+      refresh-token-validity: 1209600
+    support-services:
+      scope: scim.write,scim.read,openid,cloud_controller.read,cloud_controller.write
+      secret: ssosecretsso
+      id: support-services
+      authorized-grant-types: authorization_code,client_credentials
+      redirect-uri: http://support-signon.cf.rdg.cpgpaas.net
+      authorities: portal.users.read
+      access-token-validity: 1209600
+      refresh-token-validity: 1209600
+    vmc:
+      override: true
+      authorized-grant-types: implicit
+      authorities: uaa.none
+      redirect-uri: http://uaa.cloudfoundry.com/redirect/vmc,https://uaa.cloudfoundry.com/redirect/vmc
+      scope: cloud_controller.read,cloud_controller.write,openid,password.write,cloud_controller.admin,scim.read,scim.write
+
+
+    admin:
+      authorized-grant-types: client_credentials
+      authorities: clients.read,clients.write,clients.secret,uaa.admin
+      id: admin
+      secret: adminclientsecret
+
+
+    cloud_controller:
+      authorized-grant-types: client_credentials
+      authorities: scim.read,scim.write,password.write
+      id: cloud_controller
+      secret: ccclientsecret
+      access-token-validity: 604800
+
+
+
+    login:
+      id: login
+      secret: loginclientsecret
+      authorized-grant-types: client_credentials
+      authorities: oauth.login
+
+
+scim:
+  userids_enabled: false
+
+
+  user.override: true
+
+  users: 
+    - admin@cf.rdg.cpgpaas.net|admin|scim.write,scim.read,openid,cloud_controller.admin
+    - dashuser|dashpassword|openid,dashboard.user
+
+
